@@ -1,6 +1,6 @@
 import logging
 import asyncio
-from SqlHelper import Select, Update, Delete, execute
+from SqlHelper import Select, Update, Delete, execute, create_pool
 
 
 class Field(object):
