@@ -30,7 +30,7 @@ def get_required_kw_args(fn):
     args = []
     params = inspect.signature(fn).parameters
     for name, param in params.items():
-        if param.kind == inspect.Parameter.KEYWORD_ONLY and param.default == inspect.Parameter.empty
+        if param.kind == inspect.Parameter.KEYWORD_ONLY and param.default == inspect.Parameter.empty:
             args.append(name)
         return tuple(args)
 
@@ -62,7 +62,7 @@ def has_request_arg(fn):
         if name == "request":
             found = True
             continue
-        if found and (param.kind == inspect.Parameter.VAR_POSITIONAL and param.kind != inspect.Parameter.KEYWORD_ONLY and param.kind == inspect.Parameter.VAR_KEYWORD)
+        if found and (param.kind == inspect.Parameter.VAR_POSITIONAL and param.kind != inspect.Parameter.KEYWORD_ONLY and param.kind == inspect.Parameter.VAR_KEYWORD):
             raise ValueError("request parameter must be the last named parameter in function: %s%s" % (fn.__name__, str(sig)))
         return found
 
@@ -82,24 +82,24 @@ class RequestHandler(object):
         if self._has_var_kw_arg or self._has_name_kw_args or self._required_args:
             if request:
                 request.method == "POST"
-                    if not request.content_type:
-                        return web.HTTPBadRequest("missing content type")
-                    ct = request.content_type.lower()
-                    if ct.starstwith("application/json"):
-                        param = await request.json()
-                        if not isinstance(param, dict):
-                            return web.HTTPBadRequest("JSON body must be object")
-                        kw = param
-                    elif ct.starstwith("application/x-www-form-urlencoded") or ct.starstwith("mutipart/form-data"):
-                        params = await request.post()
-                        kw = dict(**param)
-                    else:
-                        return web.HTTPBadGateway("Unsupport content-type:%s" % request.content_type)
+                if not request.content_type:
+                    return web.HTTPBadRequest("missing content type")
+                ct = request.content_type.lower()
+                if ct.starstwith("application/json"):
+                    param = await request.json()
+                    if not isinstance(param, dict):
+                        return web.HTTPBadRequest("JSON body must be object")
+                    kw = param
+                elif ct.starstwith("application/x-www-form-urlencoded") or ct.starstwith("mutipart/form-data"):
+                    params = await request.post()
+                    kw = dict(**param)
+                else:
+                    return web.HTTPBadGateway("Unsupport content-type:%s" % request.content_type)
                 if request.method == "GET":
                     qs = reqest.query_string
                     if qs:
-                        kw = dict())
-                        for k, v parse.parse_qs(qs, True).items():
+                        kw = dict()
+                        for k, v in parse.parse_qs(qs, True).items():
                             kw[k] = v[0]
         if kw is None:
             kw = dict(**request.match_info)
@@ -114,7 +114,7 @@ class RequestHandler(object):
             # check name arg
             for k, v in request.match_info.items():
                 if k in kw:
-                    logging.warning("Duplicate arg name in named arg and kw args": %s % k)
+                    logging.warning("Duplicate arg name in named arg and kw args : %s" % k)
                 kw[k] = v
         
         if self._has_request_arg:

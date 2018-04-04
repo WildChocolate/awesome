@@ -88,17 +88,17 @@ def datetime_filter(t):
     delta = int(time.time()- t)
     if delta < 60:
         return u"1分钟前"
-    if delta <　3600:
+    if delta < 3600:
         return u"%s 分钟前" % (delta//3600)
-    if delta <　604800:
+    if delta < 604800:
         return u"%s 天前:" % (delta//86400)
     dt = datetime.fromtimestamp(t)
     return u"%s年%s月%s日" % (dt.year, dt.month, dt.day)
 
 
 
-def index(request):
-    return web.Response(body=b"<h1>AWESOME</h1>", headers={"content-type":"text/html"})
+# def index(request):
+#     return web.Response(body=b"<h1>AWESOME</h1>", headers={"content-type":"text/html"})
 
 
 async def init(loop):
@@ -109,7 +109,7 @@ async def init(loop):
     init_jinja2(app, filters=dict(datetime=datetime_filter))
     add_routes(app, "handlers")
     add_static(app)
-    srv = await loop.create_server(app.make_handler, "127.0.0.1", 10024)
+    srv = await loop.create_server(app.make_handler(), "127.0.0.1", 10024)
     logging.info("server start at http://127.0.0.1:10024...")
     return srv
 

@@ -52,7 +52,7 @@ class ModelMetaClass(type):
         if name == "Model":
             return type.__new__(cls, name, bases, attrs)
 
-        tableName = attrs.get("__table__", None) or name   
+        tableName = attrs.get("__table__", None) or name
         logging.info('found model: %s (table: %s)' % (name, tableName))
 
         mappings = dict()
@@ -74,7 +74,7 @@ class ModelMetaClass(type):
             attrs.pop(k)
         escape_field = list(map(lambda f: "`%s`" % f, fields))
         attrs["__mappings__"] = mappings
-        attrs["__tables__"] = tableName
+        attrs["__table__"] = tableName
         attrs["__primary_key__"] = primaryKey
         attrs["__fields__"] = fields
 
@@ -182,16 +182,16 @@ class Model(dict, metaclass=ModelMetaClass):
             return rs[0]["__num__"]
         
 
-    async def Update(self):
-        args = list(map(self.getValueOrDefault, self.__fields__))   
-        args.append(self.getValueOrDefault(self.__primary_key__))
-        rows = await execute(self.__insert__, args)
-        if rows != 1:
-            logging.warn("failed to update by primary key: affected rows:%s" % rows)
+    # async def Update(self):
+    #     args = list(map(self.getValueOrDefault, self.__fields__))   
+    #     args.append(self.getValueOrDefault(self.__primary_key__))
+    #     rows = await execute(self.__insert__, args)
+    #     if rows != 1:
+    #         logging.warn("failed to update by primary key: affected rows:%s" % rows)
 
 
-    async def remove(self):
-        args = [self.getValue(self.__primay_key__)]
-        rows = await execute(self.__delete__, args)
-        if row != 1:
-            logging.log("failed to remvote by primary key: affected rows:%s" % rows)
+    # async def remove(self):
+    #     args = [self.getValue(self.__primay_key__)]
+    #     rows = await execute(self.__delete__, args)
+    #     if row != 1:
+    #         logging.log("failed to remvote by primary key: affected rows:%s" % rows)
