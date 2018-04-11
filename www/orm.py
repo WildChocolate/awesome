@@ -119,11 +119,11 @@ class Model(dict, metaclass=ModelMetaClass):
 
 
     
-    @asyncio.coroutine
-    def save(self):
+    
+    async def save(self):
         args = list(map(self.getValueOrDefault, self.__fields__))
         args.append(self.getValueOrDefault(self.__primary_key__))
-        rows = yield from execute(self.__insert__, args)
+        rows = await execute(self.__insert__, args)
         if rows!=1:
             logging.warn('failed to insert record: affected rows: %s' % rows)
 
@@ -153,15 +153,14 @@ class Model(dict, metaclass=ModelMetaClass):
                     args.append(limit)
                 else:
                     raise ValueError('Invalid limit value: %s' % str(limit))
-        rs = await select(" ".join(sql), args)
+        rs = await Select(" ".join(sql), args)
         return [cls(**r) for r in rs]
 
 
     @classmethod
-    @asyncio.coroutine
-    def find(cls, pk):
+    async def find(cls, pk):
         'find object by primary key'
-        rs = yield from select("%s where `%s`=?" % (cls.__select__, cls.__primary_key__), pk, 1)
+        rs = await Select("%s where `%s`=?" % (cls.__select__, cls.__primary_key__), pk, 1)
         if len(rs) == 0 :
             return None
         else:

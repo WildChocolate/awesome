@@ -9,6 +9,7 @@ def get(path):
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kw):
+            logging.info("request path:%s" % path)
             return func(*args, **kw)
         wrapper.__method__ = "GET"
         wrapper.__route__ = path
@@ -71,30 +72,29 @@ class RequestHandler(object):
     def __init__(self, app, fn):
         self._app = app
         self._func = fn
-        self._has_requset_arg = has_request_arg(fn)
+        self._has_request_arg = has_request_arg(fn)
         self._has_var_kw_arg = has_var_kw_args(fn)
         self._has_name_kw_args = has_name_kw_ars(fn)
         self._name_kw_args = get_name_kw_args(fn)
-        self._required_args = get_required_kw_args(fn)
+        self._required_kw_args = get_required_kw_args(fn)
 
     async def __call__(self, request):
         kw = None
-        if self._has_var_kw_arg or self._has_name_kw_args or self._required_args:
-            if request:
-                request.method == "POST"
+        if self._has_var_kw_arg or self._has_name_kw_args or self._required_kw_args:
+            if request.method == "POST":
                 if not request.content_type:
                     return web.HTTPBadRequest("missing content type")
                 ct = request.content_type.lower()
-                if ct.starstwith("application/json"):
+                if ct.startswith("application/json"):
                     param = await request.json()
                     if not isinstance(param, dict):
                         return web.HTTPBadRequest("JSON body must be object")
                     kw = param
-                elif ct.starstwith("application/x-www-form-urlencoded") or ct.starstwith("mutipart/form-data"):
+                elif ct.startswith("application/x-www-form-urlencoded") or ct.startswith("mutipart/form-data"):
                     params = await request.post()
                     kw = dict(**param)
                 else:
-                    return web.HTTPBadGateway("Unsupport content-type:%s" % request.content_type)
+                    return web.HTTPBadRequest("Unsupport content-type:%s" % request.content_type)
                 if request.method == "GET":
                     qs = reqest.query_string
                     if qs:
@@ -137,28 +137,33 @@ def add_static(app):
     logging.info("add static %s => %s " % ("/static/", path))
 
 def add_route(app, fn):
-    method = getattr(fn, "__method__", None)
-    path = getattr(fn, "__path__", None)
+    method = getattr(fn, "__method__", None)# 获取求的方法 get 还是 set
+    path = getattr(fn, "__route__", None)# 路由地址
     if path is None or method is None:
         raise ValueError("@get or @post not define in %s " % str(fn))
+    # 如果此方法不是 异步方法，则转化为异步（协程）
     if not asyncio.iscoroutinefunction(fn) and not inspect.isgeneratorfunction(fn):
         fn = asyncio.coroutine(fn)
     logging.info("add route %s %s => %s(%s)" % (method, path, fn.__name__, ",".join(inspect.signature(fn).parameters.keys())))
-    app.route.add_route(method, path, RequestHandler(app, fn))
+    # 正式对 路由地址和处理方法 添加上 映射关系
+    app.router.add_route(method, path, RequestHandler(app, fn))
 
 def add_routes(app, module_name):
+    logging.info("add routes->>")
     n = module_name.rfind(".")
     if n == -1:
         mod = __import__(module_name, globals(), locals())
     else:
         name = module_name[n+1:]
         mod = getattr(__import__(module_name[:n], globals(), locals(), [name]), name)
-        for attr in dir(mod):
-            if attr.starstwith("_"):
-                continue
-            fn = getattr(mod, attr)
-            if callable(fn):
-                method = getattr(fn, "__method__", None)
-                path = getattr(fn, "__route__", None)
-                if method and path:
-                    add_route(app, fn)
+    for attr in dir(mod):
+        if attr.startswith("_"):
+            continue
+        ## 把经过装饰的方法拿出来
+        fn = getattr(mod, attr)
+        if callable(fn):
+            method = getattr(fn, "__method__", None)
+            path = getattr(fn, "__route__", None)
+            ## 如果 是一个方法，则进入下一步进行绑定
+            if method and path:
+                add_route(app, fn)
