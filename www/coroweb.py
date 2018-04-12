@@ -96,7 +96,7 @@ class RequestHandler(object):
                 else:
                     return web.HTTPBadRequest("Unsupport content-type:%s" % request.content_type)
                 if request.method == "GET":
-                    qs = reqest.query_string
+                    qs = request.query_string
                     if qs:
                         kw = dict()
                         for k, v in parse.parse_qs(qs, True).items():
@@ -104,7 +104,7 @@ class RequestHandler(object):
         if kw is None:
             kw = dict(**request.match_info)
         else:
-            if not self.has_var_kw_arg and self._name_kw_args:
+            if not self._has_var_kw_arg and self._name_kw_args:
                 # remove all unknow keyword
                 copy = dict()
                 for name in self._name_kw_args:

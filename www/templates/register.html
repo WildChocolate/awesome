@@ -10,46 +10,47 @@ function validateEmail(email){
     var re = /^[a-z0-9\.\-\_]+\@[a-z0-9\-\_]+(\.[a-z0-9\-\_]+){1,4}$/;
     return re.test(email.toLowerCase())
 }
-$(function(){
+$(function () {
     var vm = new Vue({
-        e1 : "#vm",
-        data :{
-            name: "",
-            email: "",
-            password1: "",
-            password2: ""
+        el: '#vm',
+        data: {
+            name: 'jason',
+            email: '1963391381@qq.com',
+            password1: '1324956',
+            password2: '1324956'
         },
-        method :{
-            submit : function(){
+        methods: {
+            submit: function (event) {
                 event.preventDefault();
-                var $form = $("#vm")  ;
-                if(!this.name.trim()){
-                    return $form.showFormError("请输入名字")
+                var $form = $('#vm');
+                if (! this.name.trim()) {
+                    return $form.showFormError('请输入名字');
                 }
-                if(!validateEmail(this.email.trim().toLowerCase())){
-                    return $form.showFormError("请输入正确的email地址")
+                if (! validateEmail(this.email.trim().toLowerCase())) {
+                    return $form.showFormError('请输入正确的Email地址');
                 }
-                if(this.password1.length < 6){
-                    return $form.showFormError("密码口令至少为6个字符")
+                if (this.password1.length < 6) {
+                    return $form.showFormError('口令长度至少为6个字符');
                 }
                 if (this.password1 !== this.password2) {
                     return $form.showFormError('两次输入的口令不一致');
                 }
-                var email = this.email.trim.toLowerCase();
-                $form.postJSON("/api/users",{
-                    name: this.name.trim,
+                var email = this.email.trim().toLowerCase();
+                alert("email:"+email+" name:"+name+" passwd:"+this.password1);
+                $form.postJSON('/api/users', {
                     email: email,
-                    password: CryptoJS.SHA1(email + ":" +this.password1).toString()
-                }, function(err, r){
-                    if(err){
-                        return $form.showFormError(err)
+                    name : this.name.trim(),
+                    passwd : CryptoJS.SHA1(email + ':' + this.password1).toString()
+                }, function (err, r) {
+                    if (err) {
+                        return $form.showFormError(err);
                     }
-                    return location.assign("/")
+                    return location.assign('/');
                 });
             }
         }
     });
-    $("#vm").show()
+    $('#vm').show();
 });
 </script>
 {% endblock %}
@@ -61,19 +62,16 @@ $(function(){
         <form id="vm" v-on="submit: submit" class="uk-form uk-form-stacked">
             <div class="uk-alert uk-alert-danger uk-hidden"></div>
             <div class="uk-form-row">
-                <label class="uk-form-label">
-                    名字
-                </label>
+                <label class="uk-form-label">名字:</label>
                 <div class="uk-form-controls">
                     <input v-model="name" type="text" maxlength="50" placeholder="名字" class="uk-width-1-1">
                 </div>
             </div>
             <div class="uk-form-row">
-                <label class="uk-form-label">电子邮件</label>
+                <label class="uk-form-label">电子邮件:</label>
                 <div class="uk-form-controls">
                     <input v-model="email" type="text" maxlength="50" placeholder="your-name@example.com" class="uk-width-1-1">
                 </div>
-
             </div>
             <div class="uk-form-row">
                 <label class="uk-form-label">输入口令:</label>
